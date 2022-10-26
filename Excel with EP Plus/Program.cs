@@ -1,10 +1,12 @@
-﻿using System.Drawing;
+﻿using System.Data;
+using System.Drawing;
 using System.IO;
-// The following to two namespace contains
-// the functions for manipulating the
-// Excel file
+using System.Runtime.CompilerServices;
+using System.Text;
 using OfficeOpenXml;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
 using OfficeOpenXml.Style;
+using static System.Net.Mime.MediaTypeNames;
 
 class Program
 {
@@ -47,11 +49,19 @@ class Program
         // Setting the properties
         // of the first row
         workSheet.Row(1).Height = 20;
-        workSheet.Row(1).Style. HorizontalAlignment = ExcelHorizontalAlignment.Center;
+        workSheet.Row(1).Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
         workSheet.Row(1).Style.Font.Bold = true;
-
-        //workSheet.Row(1).Style.Fill =new ExcelFill().PatternColor;
-        //workSheet.Row(1).Style.Fill.BackgroundColor =new ExcelFill().BackgroundColor.Theme;
+        workSheet.Row(1).Style.Font.Color.SetColor(Color.White);
+        workSheet.Row(1).Style.Fill.PatternType = ExcelFillStyle.Solid;
+        //workSheet.Row(1).Style.Fill.BackgroundColor.SetColor(Color.LightBlue);
+        using (ExcelRange Rng = workSheet.Cells[5, 2, 8, 4])
+        {
+            //Rng.Value = "Text Color & Background Color";
+            //Rng.Merge = true;
+            //Rng.Style.Font.Bold = true;
+            Rng.Style.Fill.PatternType = ExcelFillStyle.Solid;
+            Rng.Style.Fill.BackgroundColor.SetColor(Color.LightBlue);
+        }
 
 
         // Header of the Excel sheet 
@@ -83,7 +93,7 @@ class Program
         workSheet.Column(3).AutoFit();
 
         // file name with .xlsx extension
-        string p_strPath = "D:\\POC\\Excel with EP Plus\\Excel with EP Plus\\Models\\geeksforgeeks2.xlsx";
+        string p_strPath = "D:\\POC\\Excel with EP Plus\\Excel with EP Plus\\Models\\geeksforgeeks9.xlsx";
 
         if (File.Exists(p_strPath))
             File.Delete(p_strPath);
@@ -97,8 +107,30 @@ class Program
         //Close Excel package
         excel.Dispose();
         Console.WriteLine("Generate file SUCCESS!");
-        Console.ReadKey();
+        ReadFile(p_strPath);
+    }
 
+    private static void ReadFile(string path)
+    {
+        //StringBuilder builderPath = new StringBuilder().Append("@\"").Append(path).Append("\"") ;
+        FileInfo excel = new FileInfo(@"D:\POC\Excel with EP Plus\Excel with EP Plus\Models\geeksforgeeks9.xlsx");//builderPath.ToString());
+        using (var excelPack = new ExcelPackage()) //ExcelPackage package = new ExcelPackage(existingFile))
+        {
+            using (var package = new ExcelPackage(excel))
+            {
+                ExcelWorksheet worksheet = package.Workbook.Worksheets[1];
+                int colCount = worksheet.Dimension.End.Column;  //get Column Count
+                int rowCount = worksheet.Dimension.End.Row;     //get row count
+                for (int row = 1; row < rowCount; row++)
+                {
+                    for (int col = 1; col < colCount; col++)
+                    {
+                        Console.Write($"| {worksheet.Cells[row, col].Value?.ToString()}");
+                    }
+                    Console.WriteLine();
+                }
+            }
+        }
     }
 }
 
